@@ -34,8 +34,8 @@ router.get('/users/:userId/cart', getCart);         //shayan
 router.delete('/users/:userId/cart', deleteCart);   //shayan  
 
 //-------------FEATURE IV - Order--------------->
-router.post('/users/:userId/orders', createOrder); //sana
-router.put('/users/:userId/orders', updateOrder);  //bbbbb
+router.post('/users/:userId/orders', createOrder); //bbbb
+router.put('/users/:userId/orders', updateOrder);  //sana
 
 
 export default router;
