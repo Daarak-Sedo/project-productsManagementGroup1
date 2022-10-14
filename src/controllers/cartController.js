@@ -56,7 +56,6 @@ const updateCart = async (req, res) => {
         }
 
 
-
         //------------------- product validation ------------------------
         if (!isValid(productId)) {
             return res.status(400).send({ status: false, message: "Please enter product id" })
@@ -73,7 +72,6 @@ const updateCart = async (req, res) => {
         }
 
         let items = validCart.items
-
         let productArr = items.filter(x => x.productId.toString() == productId)
 
         if (productArr.length == 0) {
@@ -82,7 +80,7 @@ const updateCart = async (req, res) => {
 
         let index = items.indexOf(productArr[0])
 
-           //-------------- removeProduct validation -----------------------
+        //-------------- removeProduct validation -----------------------
         if (!isValid(removeProduct)) {
             return res.status(400).send({ status: false, message: "plz enter removeProduct" })
         }
@@ -91,9 +89,7 @@ const updateCart = async (req, res) => {
             return res.status(400).send({ status: false, message: "Value of Removed Product Must be 0 or 1." })
         }
 
-
         if (removeProduct == 0) {
-
             validCart.totalPrice = (validCart.totalPrice - (validProduct.price * validCart.items[index].quantity)).toFixed(2)
             validCart.items.splice(index, 1)
 
@@ -102,25 +98,20 @@ const updateCart = async (req, res) => {
         }
 
         if (removeProduct == 1) {
-
             validCart.items[index].quantity -= 1
             validCart.totalPrice = (validCart.totalPrice - validProduct.price).toFixed(2)
 
             if (validCart.items[index].quantity == 0) {
                 validCart.items.splice(index, 1)
-
-            }
+               }
             validCart.totalItems = validCart.items.length
-
             validCart.save()
-
         }
         return res.status(200).send({ status: true, message: "Success", data: validCart })
-
+        
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message })
     }
-
 }
 
 
