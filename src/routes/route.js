@@ -21,11 +21,6 @@ router.get('/products', getProductById);   //shayan
 router.put('/products/:productId', updateProduct);     //sa
 router.delete('/products/:productId', deleteProduct)   //shayan
 
-//------------FEATURE III - cart--------------->
-router.post('/users/:userId/cart', createCart);     //aj
-router.put('/users/:userId/cart', updateCart);      //bbbbb
-router.put('/products/:productId', updateProduct);   //sa
-router.delete('/products/:productId', deleteProduct)     //shayan
 
 //------------FEATURE III - cart--------------->
 router.post('/users/:userId/cart', createCart); //aj
