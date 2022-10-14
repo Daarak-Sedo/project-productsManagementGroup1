@@ -74,4 +74,12 @@ const isValidString = (value) => {
     return true
 }
 
-export { isValidName, isValidEmail, isValidFile, isValidPass, isValidNumber, isValidTxt, isValidPin, isValidObjectId, isValid, isValidPrice, isBoolean, isValidString };
+const isValidIncludes=function(value,requestBody){
+    return Object.keys(requestBody).includes(value)
+} 
+
+
+
+
+
+export { isValidName, isValidEmail, isValidFile, isValidPass, isValidNumber, isValidTxt, isValidPin, isValidObjectId, isValid, isValidPrice, isBoolean, isValidString,isValidIncludes };
