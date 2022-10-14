@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import uploadFile from '../aws/aws.js';
-import userModel from '../models/userMosel.js';
+import userModel from '../models/userModel.js';
 import { isValidName, isValidEmail, isValidFile, isValidNumber, isValidPass, isValidTxt, isValidPin, isValidObjectId } from '../util/validator.js';
 
 
