@@ -1,11 +1,13 @@
 import productModel from '../models/productModel.js';
 import uploadFile from '../aws/aws.js';
 import { isValidObjectId, isValid, isValidPrice, isBoolean, isValidString } from '../util/validator.js';
+// import { isValidName, isValidEmail, isValidFile, isValidNumber, isValidPass, isValidTxt, isValidPin, isValidObjectId } from '../util/validator.js';
+import getSymbolFromCurrency from 'currency-symbol-map'
 
 
 //======================================createProduct=============================================>
 const createProduct = async (req, res) => {
-    try {
+    
         const file = req.files;
         const data = req.body;
 
@@ -80,10 +82,7 @@ const createProduct = async (req, res) => {
 
         const saveProduct = await productModel.create(data)
         return res.status(201).send({ status: true, message: "Product created successfully", data: saveProduct })
-    }
-    catch (err) {
-        res.status(500).send({ status: false, error: err.message });
-    }
+    
 };
 
 
@@ -202,3 +201,5 @@ const deleteProduct = async (req, res) => {
 
 
 export { createProduct, getProducts, getProductById, updateProduct, deleteProduct };
+
+

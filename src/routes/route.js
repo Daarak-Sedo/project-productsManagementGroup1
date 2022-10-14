@@ -11,6 +11,7 @@ import auth from '../middleware/auth.js';
 router.post('/register', createUser);  //aj
 router.post('/login', login);          //sa
 router.get('/user/:userId/profile', auth, gateUser);   //shayan
+router.get('/user/:userId/profile', auth, gateUser);  //shayan
 router.put('/user/:userId/profile', auth, updateUser);  //shayan
 
 //-------------FEATURE II - Product--------------->
@@ -23,6 +24,12 @@ router.delete('/products/:productId', deleteProduct)   //shayan
 //------------FEATURE III - cart--------------->
 router.post('/users/:userId/cart', createCart);     //aj
 router.put('/users/:userId/cart', updateCart);      //bbbbb
+router.put('/products/:productId', updateProduct);   //sa
+router.delete('/products/:productId', deleteProduct)     //shayan
+
+//------------FEATURE III - cart--------------->
+router.post('/users/:userId/cart', createCart); //aj
+router.put('/users/:userId/cart', updateCart);  //bbbbb
 router.get('/users/:userId/cart', getCart);         //shayan  
 router.delete('/users/:userId/cart', deleteCart);   //shayan  
 
