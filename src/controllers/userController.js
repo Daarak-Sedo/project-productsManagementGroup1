@@ -1,17 +1,16 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import uploadFile from '../aws/aws.js';
 import userModel from '../models/userMosel.js';
 import { isValidName, isValidEmail, isValidFile, isValidNumber, isValidPass, isValidTxt, isValidPin, isValidObjectId } from '../util/validator.js';
-import { uploadFile, } from '../aws/aws.js';
 
 
-//======================================createUser===============================================>
+//===========================================createUser===============================================>
 const createUser = async (req, res) => {
     try {
         const reqBody = req.body;
         const file = req.files;
-
-        const { fname, lname, email, profileImage, phone, password, address } = reqBody;
+        const { fname, lname, email, phone, password, address } = reqBody;
 
         //------------------------------body validation--------------------------------->
         if (Object.keys(reqBody).length === 0)
@@ -78,7 +77,7 @@ const createUser = async (req, res) => {
         if (!isValidTxt(shipping.street))
             return res.status(400).send({ status: false, message: ` '${shipping.street}' this street is not valid in shipping.` })
 
-        //-------------------------------city validation--------------------------------->
+        //--------------------------------city validation--------------------------------->
         if (!shipping.city)
             return res.status(400).send({ status: false, message: `city is required in shipping.` }); isValidPin
 
@@ -170,7 +169,7 @@ const login = async (req, res) => {
         //------------------------------password validation--------------------------------->
 
         if (!password)
-            return res.status(400).send({ status: false, message: `password is required.` });
+            return res.status(400).send({ status: false, message: `Password is required.` });
 
         if (!isValidPass(password))
             return res.status(400).send({ status: false, message: `Password should be 8-15 char & use 0-9,A-Z,a-z & special char this combination.` });
@@ -207,14 +206,15 @@ const gateUser = async (req, res) => {
     try {
         const userId = req.params.userId;
 
-        //--------------------------------userId validation----------------------------------->
         if (!userId)
             return res.status(400).send({ status: false, message: `userId is required.` });
 
         if (!isValidObjectId(userId))
             return res.status(400).send({ status: false, message: ` '${userId}' this userId is not valid.` });
-
-        //--------------------------------exitsUser----------------------------------->
+        
+        if (req.user != userId)
+            return res.status(403).send({ status: false, message: ` You are unauthorized.` });
+        
         const existUser = await userModel.findById(userId)
         if (!existUser)
             return res.status(400).send({ status: false, message: `userId could not found through '${userId}' this userId.` });
@@ -234,10 +234,6 @@ const updateUser = async (req, res) => {
         const userId = req.params.userId
         const file = req.files
         let { fname, lname, email, phone, address, password } = reqBody;
-        console.log(typeof reqBody)
-        console.log(reqBody)
-        
-        console.log(reqBody.profileImage)
        
         //------------------------------------body validation---------------------------------------->
         if ((Object.keys(reqBody).length === 0 || reqBody.profileImage !== undefined) && (file.length === 0 || file[0].fieldname !== 'profileImage' || file === undefined))
@@ -254,7 +250,7 @@ const updateUser = async (req, res) => {
         if (!existUser)
             return res.status(404).send({ status: false, message: `No user found by '${userId}' this userId..` })
 
-        //-------------------------Authentication----------------------------->
+        //--------------------------------Authentication-------------------------------->
         if (req.user != userId)
             return res.status(403).send({ status: false, message: ` '${existUser.fname}' provide your won token.` });
 
@@ -308,7 +304,7 @@ const updateUser = async (req, res) => {
             existUser['password'] = hashPassword;
         }
 
-        //--------------------------------file validation--------------------------------->
+        //----------------------------------file validation--------------------------------->
         if (file.length > 0) {
             if (!isValidFile(file[0].originalname))
                 return res.status(400).send({ status: false, message: `Enter formate jpeg/jpg/png only.` })
@@ -385,9 +381,10 @@ const updateUser = async (req, res) => {
                 }
             }
         }
+
         //----------------------updation perform in DB------------------------>
         const newData = await userModel.findOneAndUpdate({ _id: userId }, existUser, { new: true })
-        return res.status(200).send({ status: true, message: "Success", data: newData })
+        return res.status(200).send({ status: true, message: `Success`, data: newData })
     }
     catch (err) {
         return res.status(500).send({ status: false, error: err.message });

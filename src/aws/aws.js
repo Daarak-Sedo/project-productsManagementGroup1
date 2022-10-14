@@ -76,4 +76,4 @@ let uploadFile = async (file) => {
     })
 }
 
-export { uploadFile }
+export default uploadFile 

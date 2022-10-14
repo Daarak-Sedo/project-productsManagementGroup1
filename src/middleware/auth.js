@@ -23,7 +23,7 @@ import jwt from 'jsonwebtoken';
 const auth = async (req, res, next) => {
     try {
         let token = req.headers.authorization
-        if (!token) return res.status(400).send({ status: false, message: "token must be present" });
+        if (!token) return res.status(400).send({ status: false, message: `token must be present.` });
 
         token = token.split(' ')[1];
 
