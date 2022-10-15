@@ -1,15 +1,72 @@
 import cartModel from '../models/cartModel.js';
 import userModel from '../models/userModel.js';
+import productModel from '../models/productModel.js';
 import { } from '../util/validator.js';
 import {isValidObjectId,isValid} from '../util/validator.js';
+import mongoose from 'mongoose'
+const ObjectId = mongoose.Types.ObjectId
 
 
 
 //======================================createCart =============================================>
 const createCart = async (req, res) => {
     try {
+        
+     const userId = req.params.userId;
+      const data = req.body;
+      const { quantity, productId } = data;
+        
+         if (Object.keys(data).length === 0) return res.status(400).send({ status: false, message: "Request body can'nt be empty" })
 
-    }
+        if (!ObjectId.isValid(userId)) return res.status(400).send({ status: false, message: "User id is Invalid" })
+
+        if (!isValid(productId)) return res.status(400).send({ status: false, message: "Product id is required and should be a valid string" })
+
+         if (!ObjectId.isValid(productId)) return res.status(400).send({ status: false, message: "Product Id is invalid" })
+
+        if (!isValid(quantity)) return res.status(400).send({ status: false, message: "Quantity is required" })
+        if (isNaN(Number(quantity))) return res.status(400).send({ status: false, message: "Quantity should be a valid number" })
+        if (Number(quantity) < 1) return res.status(400).send({ status: false, message: "Quantity shouldn't be less than one" })
+
+        const userExist = await userModel.findById({ _id: userId })
+        if (!userExist) return res.status(404).send({ status: false, message: `No user found with this ${userId}` })
+
+        const productExist = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!productExist) return res.status(404).send({ status: false, message: `No product found with this ${productId}` })
+        
+        if (cartExist) {
+            let price = cartExist.totalPrice + (quantity * productExist.price)
+
+            let arrayOfItems = cartExist.items
+            for (let i in arrayOfItems) {
+                if (arrayOfItems[i].productId.toString() === productId) {
+                    arrayOfItems[i].quantity += Number(quantity)
+
+                    let updatedCart = { items: arrayOfItems, totalPrice: price, totalItems: arrayOfItems.length }
+                    let response = await cartModel.findOneAndUpdate({ _id: cartExist._id }, updatedCart, { new: true })
+                    return res.status(200).send({ status: true, message: "Product added in cart successfully", data: response })
+                }
+            }
+            arrayOfItems.push({ productId: productId, quantity: quantity })
+            let updatedCart = { items: arrayOfItems, totalPrice: price, totalItems: arrayOfItems.length }
+            let response = await cartModel.findOneAndUpdate({ _id: cartExist._id }, updatedCart, { new: true })
+            return res.status(200).send({ status: false, message: "Product added in cart successfully", data: response })
+          
+             } else {
+
+            let cartData = {
+                userId: userId,
+                items: [{
+                    productId: productId,
+                    quantity: quantity
+                }],
+                totalPrice: productExist.price * quantity,
+                totalItems: 1
+            }
+            const saveCart = await cartModel.create(cartData)
+            return res.status(201).send({ status: true, message: "cart created successfully", data: saveCart })
+        }  
+      }
     catch (err) {
         res.status(500).send({ status: false, error: err.message })
     }
@@ -20,7 +77,7 @@ const createCart = async (req, res) => {
 
 const updateCart = async (req, res) => {
     try {
-        let userId = req.params.userId;
+       let userId = req.params.userId;
         let data = req.body
         let { productId, cartId, removeProduct } = req.body
 
@@ -51,8 +108,8 @@ const updateCart = async (req, res) => {
         }
 
         //----------------- find cartID in cart collection --------------
-        const validCart = await cartModel.findOne({ _id: cartId, userId: userId });
-        if (!validCart) {
+        const findCart = await cartModel.findOne({ _id: cartId, userId: userId });
+        if (!findCart) {
             return res.status(404).send({ status: false, message: "Cart not present" })
         }
 
@@ -67,12 +124,12 @@ const updateCart = async (req, res) => {
         }
 
         //--------------------find productId in product collection------------
-        const validProduct = await productModel.findOne({ _id: productId, isDeleted: false });
-        if (!validProduct) {
+        const findProduct = await productModel.findOne({ _id: productId, isDeleted: false });
+        if (!findProduct) {
             return res.status(404).send({ status: false, message: "Product not present" })
         }
 
-        let items = validCart.items
+        let items = findCart.items
         let productArr = items.filter(x => x.productId.toString() == productId)
 
         if (productArr.length == 0) {
@@ -91,25 +148,27 @@ const updateCart = async (req, res) => {
         }
 
         if (removeProduct == 0) {
-            validCart.totalPrice = (validCart.totalPrice - (validProduct.price * validCart.items[index].quantity)).toFixed(2)
-            validCart.items.splice(index, 1)
+            findCart.totalPrice = (findCart.totalPrice - (findProduct.price * findCart.items[index].quantity)).toFixed(2)
 
-            validCart.totalItems = validCart.items.length
-            validCart.save()
+            findCart.items.splice(index, 1)
+
+            findCart.totalItems = findCart.items.length
+
+            findCart.save()
+           
         }
 
         if (removeProduct == 1) {
-            validCart.items[index].quantity -= 1
-            validCart.totalPrice = (validCart.totalPrice - validProduct.price).toFixed(2)
+            findCart.items[index].quantity -= 1
+            findCart.totalPrice = (findCart.totalPrice - findProduct.price).toFixed(2)
 
-            if (validCart.items[index].quantity == 0) {
-                validCart.items.splice(index, 1)
+            if (findCart.items[index].quantity == 0) {
+                findCart.items.splice(index, 1)
                }
-            validCart.totalItems = validCart.items.length
-            validCart.save()
+            findCart.totalItems = findCart.items.length
+            findCart.save()
         }
-        return res.status(200).send({ status: true, message: "Success", data: validCart })
-        
+        return res.status(200).send({ status: true, message: "Success", data: findCart })
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message })
     }
