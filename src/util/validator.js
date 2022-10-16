@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 //---------------------------------name------------------------------------->
 const isValidName = (name) => {
-    if ((typeof name == "string" && name.trim().length != 0 && name.match(/^[A-Z a-z]{2,}$/)))
+    if ((typeof name == 'string' && name.trim().length != 0 && name.match(/^[A-Z a-z]{2,}$/)))
         return true
     return false
 };
@@ -16,6 +16,7 @@ const isValidEmail = (email) => {
 
 //---------------------isValidFile------------------>
 const isValidFile = (img) => {
+    // const regex = /(\.(?:png|gif|webp|jpeg|jpg))$/.test(img)
     const regex = /(\/*\.(?:png|gif|webp|jpeg|jpg))/.test(img)
     return regex
 }
@@ -34,7 +35,7 @@ const isValidNumber = (phone) => {
 
 //---------------------------isValidTxt-------------------------->
 const isValidTxt = (txt) => {
-    const regex = /^[A-Za-z0-9 ]{2,}$/.test(txt)
+    const regex = /^(?=.*[A-Za-z]+)[A-Za-z\s0-9]{2,}$/.test(txt)
     return regex
 }
 
