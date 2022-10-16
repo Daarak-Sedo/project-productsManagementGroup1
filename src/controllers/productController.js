@@ -166,6 +166,81 @@ const getProductById = async (req, res) => {
 //======================================updateProduct=============================================>
 const updateProduct = async (req, res) => {
     try {
+        let productId = req.params.productId;
+        if (!productId) return res.status(400).send({ status: false, message: "Product id is required in path params" })
+        if (!isValidObjectId(productId)) return res.status(400).send({ status: false, message: "Product id should be valid mongoose type object Id" })
+
+        const productExist = await productModel.findById({ _id: productId })
+        if (!productExist) return res.status(404).send({ status: false, message: "Product details from given product id not found" })
+
+        if (productExist.isDeleted === 'false') return res.status(400).send({ status: false, message: "Product is already deleted" })
+
+        if (Object.keys(req.body).length === 0) return res.status(400).send({ status: false, message: "No data found to be updated,please enter data to update" })
+
+        const { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments, productImage } = req.body
+
+        let obj = {}
+
+        if (title) {
+            if (!isValid(title)) return res.status(400).send({ status: false, message: "Title is required and should be valid" })
+            const dupTitle = await productModel.findOne({ title: title })
+            if (dupTitle) return res.status(400).send({ status: false, message: "Title is already present in DB" })
+            obj['title'] = title
+        }
+        if (description) {
+            if (!isValid(description)) return res.status(400).send({ status: false, message: "Description is required and should be valid" })
+            obj['description'] = description
+        }
+        if (price) {
+            if (!isValidPrice(price)) return res.status(400).send({ status: false, message: `Price is required and should be a valid price e.g(54,589.23,6726,etc).` })
+            obj['price'] = price
+        }
+        if (currencyId) {
+            if (currencyId !== 'INR') return res.status(400).send({ status: false, message: `NR should be the currency id.` })
+            obj['currencyId'] = currencyId
+        }
+        if (currencyFormat) {
+            if (currencyFormat != 'INR' || currencyFormat != '₹') return res.status(400).send({ status: false, message: "Please enter a valid currency id or currency format i.e 'INR' or '₹'" })
+            const symbol = getSymbolFromCurrency('INR')
+            obj['currencyFormat'] = symbol
+            console.log(symbol)
+        }
+        if (isFreeShipping) {
+            if (!isBoolean(isFreeShipping)) return res.status(400).send({ status: false, message: "Is free Shipping value should be boolean" })
+            obj['isFreeShipping'] = isFreeShipping
+        }
+        if (style) {
+            if (!isValidString(style)) return res.status(400).send({ status: false, message: "Style should be a valid string" })
+            obj['style'] = style
+        }
+        if (installments) {
+            if (isNaN(Number(installments))) return res.status(400).send({ status: false, message: "Installments should be a valid number" })
+            obj['installments'] = installments
+        }
+
+
+        if (productImage) {
+            let file = req.files
+            if (!(file && file.length)) return res.status(400).send({ status: false, message: "No file found" })
+
+            let uploadedFileUrl = await uploadFile(file[0])
+            obj['productImage'] = uploadedFileUrl
+        }
+        obj = { $set: obj }
+        if (availableSizes) {
+            let sizeArray = availableSizes.toUpperCase().split(',').map(x => x.trim())
+            //console.log(sizeArray)
+            for (let i = 0; i < sizeArray.length; i++) {
+                if (!(["S", "XS", "M", "X", "L", "XL", "XXL"].includes(sizeArray[i]))) {
+                    return res.status(400).send({ status: false, message: `Please enter size from available sizes ["S","XS","M","X","L","XL","XXL"]` })
+                }
+            }
+            obj['$addToSet'] = { availableSizes: sizeArray }
+        }
+        const updatedPro = await productModel.findOneAndUpdate({ _id: productId, isDeleted: false }, obj, { new: true })
+        return res.status(200).send({ status: true, message: "Product updated successfully!!", data: updatedPro })
+
+
 
     }
     catch (err) {
