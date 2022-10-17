@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 
+//------------------------authorization------------------------>
 const authentication = async (req, res, next) => {
     try {
         let token = req.headers.authorization
@@ -19,11 +20,13 @@ const authentication = async (req, res, next) => {
         res.status(500).send({ status: false, error: err.message })
     }
 }
-
+//------------------------authorization------------------------>
 const authorization = async (req, res, next) => {
     try {
         const userId = req.params.userId
+  
         if (req.user != userId)
+            return res.status(403).send({ status: false, message: ` '${userId}' provide your won token.` });
         next()
     }
     catch (err) {
@@ -32,4 +35,3 @@ const authorization = async (req, res, next) => {
 }
 
 export { authentication, authorization };
-
