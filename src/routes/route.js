@@ -10,7 +10,7 @@ import { authentication, authorization } from '../middleware/auth.js';
 //--------------FEATURE I - User---------------->
 router.post('/register', createUser);  //aj
 router.post('/login', login);          //sa
-router.get('/user/:userId/profile', authorization, gateUser);   //shayan
+router.get('/user/:userId/profile', authentication, gateUser);   //shayan
 router.put('/user/:userId/profile', authentication, authorization, updateUser); //shayan
 
 //-------------FEATURE II - Product--------------->
