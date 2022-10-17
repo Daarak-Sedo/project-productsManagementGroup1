@@ -34,6 +34,8 @@ const createCart = async (req, res) => {
         const productExist = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!productExist) return res.status(404).send({ status: false, message: `No product found with this ${productId}` })
         
+           const cartExist = await cartModel.findOne({ userId: userId })
+
         if (cartExist) {
             let price = cartExist.totalPrice + (quantity * productExist.price)
 
