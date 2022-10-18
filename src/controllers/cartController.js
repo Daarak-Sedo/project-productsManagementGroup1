@@ -221,7 +221,7 @@ const deleteCart = async (req, res) => {
 
         if (!ObjectId.isValid(userId)) return res.status(400).send({ status: false, message: "User id should be a valid type mongoose object Id" })
 
-        let userExist = await userMosel.findById(userId)
+        let userExist = await userModel.findById(userId)
         if (!userExist) return res.status(404).send({ status: false, message: "User not found for the given user Id" })
 
         let findCart = await cartModel.findOne({ userId: userId })
