@@ -217,20 +217,22 @@ const getCart = async (req, res) => {
 //======================================deleteCart=============================================>
 const deleteCart = async (req, res) => {
     try {
-        const userId = req.params.userId;
+        let userId = req.params.userId;
 
-        if (!isValidObjectId(userId))
-            return res.status(400).send({ status: false, message: ` '${userId}' this userId is invalid.` })
+        if (!ObjectId.isValid(userId)) return res.status(400).send({ status: false, message: "User id should be a valid type mongoose object Id" })
 
-        let foundCart = await cartModel.findOne({ userId })
-        if (!foundCart) return res.status(404).send({ status: false, message: `Cart not found`})
+        let userExist = await userMosel.findById(userId)
+        if (!userExist) return res.status(404).send({ status: false, message: "User not found for the given user Id" })
 
-        if (foundCart.totalItems === 0)
-            return res.status(404).send({ status: false, message: `Item already deleted.` })
-        
-        const deleteCart = await cartModel.findOneAndUpdate({ _id: foundCart._id }, { items: [], totalPrice: 0, totalItems: 0 }, { new: true })
+        let findCart = await cartModel.findOne({ userId: userId })
+        if (!findCart) return res.status(404).send({ status: false, message: "Cart not found for the given userId" })
 
-        res.status(204).send({ status: true, message: `successfully deleted.`, data: deleteCart })
+        if (findCart.totalItems == 0) return res.status(400).send({ status: false, message: "Cart is empty as already products are deleted" })
+
+        //let cartId = findCart._id
+        let makeCartEmpty = await cartModel.findOneAndUpdate({ userId: userId }, { items: [], totalPrice: 0, totalItems: 0 }, { new: true })
+
+        return res.status(200).send({ status: false, message: "Cart emptied successfully", data: makeCartEmpty })
     }
     catch (err) {
         res.status(500).send({ status: false, error: err.message });
