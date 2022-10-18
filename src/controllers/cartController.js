@@ -56,7 +56,7 @@ const createCart = async (req, res) => {
                     productArray[i].quantity = newQuantity
                     cartExist.totalPrice = totPrice
                     await cartExist.save()
-                    let response = await cartModel.findOne({ userId: userId }).populate('items.productId', { __v: 0, _id: 0, isDeleted: 0, createdAt: 0, deletedAt: 0, currencyId: 0, currencyFormat: 0, updatedAt: 0, availableSizes: 0 })
+                    let response = await cartModel.findOne({ userId: userId }).populate('items.productId', { title: 1, productImage: 1, price: 1 })
                     return res.status(200).send({ status: true, message: "Success", data: response })
                 }
 
@@ -65,7 +65,7 @@ const createCart = async (req, res) => {
             cartExist.totalPrice = cartExist.totalPrice + productExist.price
             cartExist.totalItems = cartExist.items.length
             await cartExist.save()
-            let response = await cartModel.findOne({ userId: userId }).populate('items.productId', { __v: 0, _id: 0, isDeleted: 0, createdAt: 0, deletedAt: 0, currencyId: 0, currencyFormat: 0, updatedAt: 0, availableSizes: 0 })
+            let response = await cartModel.findOne({ userId: userId }).populate('items.productId', { title: 1, productImage: 1, price: 1 })
             return res.status(200).send({ status: true, message: "Success", data: response })
 
         }
@@ -79,7 +79,8 @@ const createCart = async (req, res) => {
         }
         obj['totalItems'] = obj.items.length
         let result = await cartModel.create(obj)
-        return res.status(201).send({ status: true, message: "Cart created successfully", data: result })
+        let response = await cartModel.findOne({ userId: userId }).populate('items.productId', { title: 1, productImage: 1, price: 1 })
+        return res.status(201).send({ status: true, message: "Cart created successfully", data: response })
 
       }
     catch (err) {
@@ -194,6 +195,18 @@ const updateCart = async (req, res) => {
 //======================================getCart=============================================>
 const getCart = async (req, res) => {
     try {
+        let userId = req.params.userId;
+
+        if (!ObjectId.isValid(userId)) return res.status(400).send({ status: false, message: "User id should be a valid type mongoose object Id" })
+
+        let userExist = await userModel.findById(userId)
+        if (!userExist) return res.status(404).send({ status: false, message: "User not found for the given user Id" })
+
+        let searchCart = await cartModel.findOne({ userId: userId }).populate('items.productId', { title: 1, productImage: 1, price: 1 })
+
+        if (!searchCart) return res.status(400).send({ status: false, message: "Cart not found for the given userId" })
+
+        return res.status(200).send({ status: true, message: "Success", data: searchCart })
     }
     catch (err) {
         res.status(500).send({ status: false, error: err.message });
