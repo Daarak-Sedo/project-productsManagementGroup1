@@ -181,7 +181,6 @@ const updateCart = async (req, res) => {
 //======================================getCart=============================================>
 const getCart = async (req, res) => {
     try {
-
     }
     catch (err) {
         res.status(500).send({ status: false, error: err.message });
