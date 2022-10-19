@@ -257,17 +257,17 @@ const deleteProduct = async (req, res) => {
         if (!isValidObjectId(productId))
             return res.status(400).send({ status: false, message: ` '${productId}' this productId is invalid.` })
 
-        const existProduct = await productModel.findById(productId )
+        const existProduct = await productModel.findById(productId)
 
         if (!existProduct)
             return res.status(404).send({ status: false, message: `Product does't exits` })
 
-        if (existProduct === true)
+        if (existProduct.isDeleted === true)  
             return res.status(400).send({ status: false, message: ` '${productId}' this productId already deleted.` })
-        
-        await productModel.findByIdAndUpdate({ _id: productId }, { isDeleted: true, deletedAt: Date.now() });
 
-        res.status(200).send({ status: true, message: `Successfully deleted.` })
+        const deleteData = await productModel.findByIdAndUpdate({ _id: productId }, { isDeleted: true, deletedAt: Date.now() });
+
+        res.status(200).send({ status: true, message: `Successfully deleted.`, data: deleteData })
     }
     catch (err) {
         res.status(500).send({ status: false, error: err.message });
