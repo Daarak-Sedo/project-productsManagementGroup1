@@ -5,6 +5,7 @@ import userModel from '../models/userModel.js';
 import { isValidName, isValidEmail, isValidFile, isValidNumber, isValidPass, isValidTxt, isValidPin, isValidObjectId } from '../util/validator.js';
 
 
+
 //===========================================createUser===============================================>
 const createUser = async (req, res) => {
     try {
@@ -12,46 +13,40 @@ const createUser = async (req, res) => {
         const file = req.files;
         const { fname, lname, email, phone, password, address } = reqBody;
 
-        //------------------------------body validation--------------------------------->
-        if (Object.keys(reqBody).length === 0)
-            return res.status(400).send({ status: false, message: `Please provide user details` });
 
-        if (Object.keys(reqBody).length > 7)
-            return res.status(400).send({ status: false, message: `You cam't add extra field` });
+        if (file === undefined || !file.length )
+            return res.status(400).send({ status: false, message: `Please provide user details` })
 
-        //------------------------------file validation--------------------------------->
-        if (!file[0])
-            return res.status(400).send({ status: false, message: `Please provide image file` });
+        if ((Object.keys(reqBody).length === 0 || reqBody.profileImage !== undefined) && (file.length === 0 || file[0].fieldname !== 'profileImage' || file === undefined))
+            return res.status(400).send({ status: false, message: `Please provide user details` })
 
-        //------------------------------fname validation--------------------------------->
+        if (!isValidFile(file[0].originalname))
+            return res.status(400).send({ status: false, message: `Enter formate jpeg/jpg/png only.` })
+
         if (!fname)
             return res.status(400).send({ status: false, message: `fname is required.` });
 
         if (!isValidName(fname))
             return res.status(400).send({ status: false, message: ` '${fname}' this fname is not valid.` });
 
-        //------------------------------lname validation--------------------------------->
         if (!lname)
             return res.status(400).send({ status: false, message: `lname is required.` });
 
         if (!isValidName(lname))
             return res.status(400).send({ status: false, message: ` '${lname}' this lname is not valid.` });
 
-        //------------------------------email validation--------------------------------->
         if (!email)
             return res.status(400).send({ status: false, message: `email is required.` });
 
         if (!isValidEmail(email))
             return res.status(400).send({ status: false, message: ` '${email}' this email is not valid email.` });
 
-        //------------------------------phone validation--------------------------------->
         if (!phone)
             return res.status(400).send({ status: false, message: `phone is required.` });
 
         if (!isValidNumber(phone))
             return res.status(400).send({ status: false, message: ` '${phone}' this is not valid indian phone number.` });
 
-        //------------------------------password validation--------------------------------->
         if (!password)
             return res.status(400).send({ status: false, message: `password is required.` });
 
@@ -120,20 +115,20 @@ const createUser = async (req, res) => {
         const duplicateEmail = await userModel.findOne({ email });
 
         if (duplicateEmail)
-            return res.status(400).send({ status: false, message: `Please login.` });
+            return res.status(400).send({ status: false, message: `Email already exits.` });
 
         //------------------------------finding duplicate phone------------------------------>
         const duplicatePhone = await userModel.findOne({ phone });
 
         if (duplicatePhone)
-            return res.status(400).send({ status: false, message: `Please login.` });
+            return res.status(400).send({ status: false, message: `Phone no already exits.` });
 
         //------------------aws file uploading------------------->
         const uploadedFileUrl = await uploadFile(file[0]);
 
         //----------profileImage url setting in request---------->
         reqBody.profileImage = uploadedFileUrl
-
+        
         //-------------------password hashing------------------->
         const hashPassword = await bcrypt.hash(password, 10);
         reqBody['password'] = hashPassword
@@ -142,9 +137,13 @@ const createUser = async (req, res) => {
         res.status(201).send({ status: true, message: `User created successfully!!`, data: saveUser });
 
     } catch (err) {
-        return res.status(500).send({ status: false, message: err });
+        console.log(err)
+
+        res.status(500).send({ status: false, message: err });
     }
 };
+
+
 
 //=========================================login================================================>
 const login = async (req, res) => {
