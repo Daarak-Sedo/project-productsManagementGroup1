@@ -37,7 +37,7 @@ const createProduct = async (req, res) => {
             return res.status(400).send({ status: false, message: `Currency id is required and should be a valid string.` })
 
         if (currencyId !== 'INR')
-            return res.status(400).send({ status: false, message: `NR should be the currency id.` })
+            return res.status(400).send({ status: false, message: `INR should be the currency id.` })
 
         if (!currencyFormat)
             return res.status(400).send({ status: false, message: `Please enter valid Indian currency Id (INR) to get the currency format.` })
