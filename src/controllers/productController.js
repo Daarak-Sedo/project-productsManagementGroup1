@@ -87,7 +87,7 @@ const createProduct = async (req, res) => {
 
 
 //==========================================getProducts=============================================>
-const getProducts = async (req, res) => {
+const getProductByQuery = async (req, res) => {
     try {
         const reqBody = req.query
         let { name, priceGreaterThan, priceLessThan, size, priceSort, ...rest } = reqBody
@@ -275,6 +275,6 @@ const deleteProduct = async (req, res) => {
 };
 
 
-export { createProduct, getProducts, getProductById, updateProduct, deleteProduct };
+export { createProduct, getProductByQuery, getProductById, updateProduct, deleteProduct };
 
 
